@@ -6,8 +6,8 @@ docker-build:
 docker-down:
 	docker-compose down -v
 
-run: docker-build
-	docker-compose up
+run:
+	docker-compose up --build
 
 migrate:
 	psql -h localhost -U avito -d avito_db -f migrations/0001_create_tables.sql
