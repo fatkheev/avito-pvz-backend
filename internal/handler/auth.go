@@ -24,7 +24,7 @@ func generateJWT(email, role string) (string, error) {
 	claims := jwt.MapClaims{
 		"sub":  email,
 		"role": role,
-		"exp":  time.Now().Add(72 * time.Hour).Unix(), // токен действителен 72 часа
+		"exp":  time.Now().Add(72 * time.Hour).Unix(),
 		"iat":  time.Now().Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

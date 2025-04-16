@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"net/http"
 
 	"avito-pvz-service/internal/database"
 	"avito-pvz-service/internal/handler"
@@ -23,10 +22,7 @@ func main() {
 	router.POST("/register", handler.RegisterHandler)
 	router.POST("/login", handler.LoginHandler)
 
-	router.GET("/protected", middleware.JWTMiddleware(), func(c *gin.Context) {
-		claims, _ := c.Get("user")
-		c.JSON(http.StatusOK, gin.H{"user": claims})
-	})
+	router.POST("/pvz", middleware.JWTMiddleware(), handler.CreatePVZHandler)
 
 	log.Println("Server is running on port 8080")
 	if err := router.Run(":8080"); err != nil {
