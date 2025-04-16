@@ -22,11 +22,14 @@ func main() {
 	router.POST("/register", handler.RegisterHandler)
 	router.POST("/login", handler.LoginHandler)
 
-	// Защищенный эндпоинт для создания ПВЗ (только для модераторов)
+	// Защищённый эндпоинт для создания ПВЗ (только для модераторов)
 	router.POST("/pvz", middleware.JWTMiddleware(), handler.CreatePVZHandler)
 
-	// Защищенный эндпоинт для создания приёмки товаров (только для сотрудников ПВЗ, роль "staff")
+	// Защищённый эндпоинт для создания приёмки товаров (только для сотрудников ПВЗ, роль "staff")
 	router.POST("/receptions", middleware.JWTMiddleware(), handler.CreateReceptionHandler)
+
+	// Защищённый эндпоинт для закрытия последней приёмки (только для сотрудников ПВЗ)
+	router.POST("/pvz/:pvzId/close_last_reception", middleware.JWTMiddleware(), handler.CloseReceptionHandler)
 
 	log.Println("Server is running on port 8080")
 	if err := router.Run(":8080"); err != nil {

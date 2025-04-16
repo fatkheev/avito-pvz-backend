@@ -44,3 +44,23 @@ func CreateReception(pvzId string) (*Reception, error) {
 		Status:   "in_progress",
 	}, nil
 }
+
+func CloseReception(pvzId string) (*Reception, error) {
+	var reception Reception
+	err := database.DB.QueryRow("SELECT id, date_time, pvz_id, status FROM receptions WHERE pvz_id = $1 ORDER BY date_time DESC LIMIT 1", pvzId).
+		Scan(&reception.ID, &reception.DateTime, &reception.PVZId, &reception.Status)
+	if err != nil {
+		return nil, errors.New("Нет приемки для закрытия")
+	}
+	if reception.Status != "in_progress" {
+		return nil, errors.New("Приемка уже закрыта")
+	}
+
+	_, err = database.DB.Exec("UPDATE receptions SET status = 'close' WHERE id = $1", reception.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	reception.Status = "close"
+	return &reception, nil
+}
