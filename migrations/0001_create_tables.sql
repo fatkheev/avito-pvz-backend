@@ -29,5 +29,6 @@ CREATE TABLE IF NOT EXISTS products (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     date_time TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     type VARCHAR(50) NOT NULL,
-    reception_id UUID NOT NULL REFERENCES receptions(id) ON DELETE CASCADE
+    reception_id UUID NOT NULL REFERENCES receptions(id) ON DELETE CASCADE,
+    pvz_id UUID NOT NULL REFERENCES pvz(id) ON DELETE CASCADE
 );

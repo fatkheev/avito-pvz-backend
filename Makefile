@@ -5,6 +5,7 @@ docker-build:
 
 docker-down:
 	docker-compose down -v
+	docker-compose down --rmi all
 
 run:
 	docker-compose up --build
