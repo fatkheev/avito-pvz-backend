@@ -47,10 +47,10 @@ func DummyLoginHandler(c *gin.Context) {
 		return
 	}
 
-	if req.Role != "client" && req.Role != "moderator" {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid role provided"})
-		return
-	}
+	if req.Role != "client" && req.Role != "staff" && req.Role != "moderator" {
+    c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid role provided"})
+    return
+}
 
 	token, err := generateJWT(req.Role, req.Role)
 	if err != nil {
