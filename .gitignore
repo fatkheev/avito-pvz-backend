@@ -1,0 +1,52 @@
+# Операционные системы
+.DS_Store
+Thumbs.db
+
+# Golang
+bin/
+pkg/
+*.exe
+*.dll
+*.so
+*.dylib
+*.out
+*.o
+*.a
+*.test
+*.log
+*.prof
+*.sum
+
+# Зависимости
+vendor/
+go.sum
+go.work
+
+# IDE и редакторы
+.idea/
+.vscode/
+*.swp
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Базы данных
+pgdata/
+postgres_data/
+*.db
+*.sql-journal
+
+# Миграции кеша
+migrations/*.lock
+
+# Кэш и временные файлы
+tmp/
+cache/
+*.temp
+*.bak
+*.swp
+*.swo
+
+# Файлы конфигурации
+.env
