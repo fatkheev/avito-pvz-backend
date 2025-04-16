@@ -1,2 +1,14 @@
+# Принудительно использовать LF для всех текстовых файлов
 * text=auto
+
+# Go-файлы всегда в LF (Linux/Unix стиль)
 *.go text eol=lf
+
+# Конфиги и прочие текстовые файлы — тоже в LF
+*.mod text eol=lf
+*.sum text eol=lf
+*.sql text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.sh text eol=lf

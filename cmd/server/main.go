@@ -2,19 +2,20 @@ package main
 
 import (
 	"log"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"avito-pvz-service/internal/handler"
 )
 
 func main() {
 	router := gin.Default()
 
-	// Регистрируем обработчик для /dummyLogin
-	router.POST("/dummyLogin", handler.DummyLoginHandler)
+	router.GET("/", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "Service is running"})
+	})
 
-	log.Println("Сервер запущен на порту 8080...")
+	log.Println("Server is running on port 8080")
 	if err := router.Run(":8080"); err != nil {
-		log.Fatalf("Ошибка запуска сервера: %v", err)
+		log.Fatalf("Error starting server: %v", err)
 	}
 }
