@@ -18,19 +18,21 @@ func main() {
 
 	router := gin.Default()
 
-	// Публичные эндпоинты для авторизации и регистрации
 	router.POST("/dummyLogin", handler.DummyLoginHandler)
 	router.POST("/register", handler.RegisterHandler)
 	router.POST("/login", handler.LoginHandler)
 
-	// Защищённый эндпоинт для создания ПВЗ (только для модераторов)
+	// Защищённые эндпоинты
+	// Создание ПВЗ (только для модераторов)
 	router.POST("/pvz", middleware.JWTMiddleware(), handler.CreatePVZHandler)
-
-	// Защищённый эндпоинт для создания приёмки товаров (только для сотрудников ПВЗ, роль "staff")
+	// Создание приёмки товаров (только для сотрудников, роль "staff")
 	router.POST("/receptions", middleware.JWTMiddleware(), handler.CreateReceptionHandler)
-
-	// Защищённый эндпоинт для добавления товара в текущую приёмку (только для сотрудников ПВЗ)
+	// Защищённый эндпоинт для закрытия последней приёмки (только для сотрудников ПВЗ)
+	router.POST("/pvz/:pvzId/close_last_reception", middleware.JWTMiddleware(), handler.CloseReceptionHandler)
+	// Добавление товара (только для сотрудников, роль "staff")
 	router.POST("/products", middleware.JWTMiddleware(), handler.AddProductHandler)
+	// Удаление последнего товара (только для сотрудников, роль "staff")
+	router.POST("/pvz/:pvzId/delete_last_product", middleware.JWTMiddleware(), handler.DeleteLastProductHandler)
 
 	log.Println("Server is running on port 8080")
 	if err := router.Run(":8080"); err != nil {
