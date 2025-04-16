@@ -33,6 +33,8 @@ func main() {
 	router.POST("/products", middleware.JWTMiddleware(), handler.AddProductHandler)
 	// Удаление последнего товара (только для сотрудников, роль "staff")
 	router.POST("/pvz/:pvzId/delete_last_product", middleware.JWTMiddleware(), handler.DeleteLastProductHandler)
+	// Защищённый эндпоинт для получения данных по ПВЗ (доступен сотрудникам и модераторам)
+	router.GET("/pvz", middleware.JWTMiddleware(), handler.PVZListHandler)
 
 	log.Println("Server is running on port 8080")
 	if err := router.Run(":8080"); err != nil {
