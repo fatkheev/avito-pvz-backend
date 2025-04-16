@@ -2,12 +2,36 @@ package handler
 
 import (
 	"net/http"
+	"os"
+	"time"
 
 	"avito-pvz-service/internal/repository"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
+	"golang.org/x/crypto/bcrypt"
 )
 
+func getJWTSecret() []byte {
+	secret := os.Getenv("JWT_SECRET")
+	if secret == "" {
+		secret = "default654пв6а45п46ва5п6ва5п46в5а1п6а5816а16в"
+	}
+	return []byte(secret)
+}
+
+func generateJWT(email, role string) (string, error) {
+	claims := jwt.MapClaims{
+		"sub":  email,
+		"role": role,
+		"exp":  time.Now().Add(72 * time.Hour).Unix(), // токен действителен 72 часа
+		"iat":  time.Now().Unix(),
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(getJWTSecret())
+}
+
+// DummyLoginHandler для тестовой авторизации.
 type DummyLoginRequest struct {
 	Role string `json:"role" binding:"required"`
 }
@@ -28,7 +52,12 @@ func DummyLoginHandler(c *gin.Context) {
 		return
 	}
 
-	token := "dummy-token-for-" + req.Role
+	token, err := generateJWT(req.Role, req.Role)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Token generation error"})
+		return
+	}
+
 	c.JSON(http.StatusOK, DummyLoginResponse{Token: token})
 }
 
@@ -81,12 +110,17 @@ func LoginHandler(c *gin.Context) {
 		return
 	}
 
-	if user.Password != req.Password {
+	// bcrypt для сравнения пароля
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid credentials"})
 		return
 	}
 
-	// Для теста возвращаем токен в формате "dummy-token-for-{email}"
-	token := "dummy-token-for-" + user.Email
+	token, err := generateJWT(user.Email, user.Role)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Token generation error"})
+		return
+	}
+
 	c.JSON(http.StatusOK, LoginResponse{Token: token})
 }

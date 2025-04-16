@@ -4,7 +4,7 @@ docker-build:
 	docker build -t avito-pvz-service ..
 
 docker-down:
-	docker-compose down -v
+	docker-compose down --rmi all
 
 run:
 	docker-compose up --build
