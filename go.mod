@@ -4,6 +4,14 @@ go 1.24
 
 require github.com/gin-gonic/gin v1.10.0
 
+require github.com/DATA-DOG/go-sqlmock v1.5.2 // indirect
+
+require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/stretchr/testify v1.10.0
+)
+
 require (
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
