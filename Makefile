@@ -17,6 +17,9 @@ test:
 integration-test:
 	go test -v ./tests/integration
 
+stress-test:
+	k6 run tests/stress/stress_test.js
+
 cover-html:
 	go tool cover -html=coverage.out -o coverage.html
 	start coverage.html
