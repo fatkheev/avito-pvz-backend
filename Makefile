@@ -14,6 +14,9 @@ test:
 	go test -v ./... -coverprofile=coverage.out
 	go tool cover -func=coverage.out
 
+integration-test:
+	go test -v ./tests/integration
+
 cover-html:
 	go tool cover -html=coverage.out -o coverage.html
 	start coverage.html
