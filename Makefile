@@ -10,6 +10,9 @@ docker-down:
 run:
 	docker-compose up --build
 
+gen:
+	cd internal/api && go generate
+
 test:
 	go test -v ./... -coverprofile=coverage.out
 	go tool cover -func=coverage.out
