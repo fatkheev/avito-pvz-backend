@@ -19,9 +19,7 @@ message PVZ {
   string city = 3;
 }
 
-message GetPVZListRequest {
-  // пусто
-}
+message GetPVZListRequest {}
 
 message GetPVZListResponse {
   repeated PVZ pvzs = 1;

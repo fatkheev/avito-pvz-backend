@@ -24,6 +24,7 @@ services:
     ports:
       - "8080:8080"   # HTTP
       - "3000:3000"   # gRPC
+      - "9000:9000"   # Prometheus /metrics
     depends_on:
       db:
         condition: service_healthy

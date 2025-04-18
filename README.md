@@ -12,6 +12,8 @@
 - [Тестирование](#тестирование)
 - [Нагрузочное тестирование](#нагрузочное-тестирование)
 - [HTTP-хэндлеры](#http-хэндлеры)
+- [Метрики Prometheus](#метрики-prometheus)
+- [gRPC-сервис](#grpc-сервис)
 
 ---
 
@@ -409,4 +411,85 @@ Authorization: Bearer <token>
   }
 ]
 ```
+
+## Метрики Prometheus
+
+После запуска проекта Prometheus метрики доступны по адресу: [http://localhost:9000/metrics](http://localhost:9000/metrics)
+
+### Технические метрики
+
+#### `http_requests_total`
+Общее число HTTP-запросов
+
+```
+http_requests_total{method="POST",path="/pvz",status="201"} 1
+http_requests_total{method="POST",path="/receptions",status="201"} 1
+http_requests_total{method="POST",path="/products",status="201"} 1
+```
+
+#### `http_request_duration_seconds`
+Гистограмма времени обработки запросов
+
+```
+http_request_duration_seconds_bucket{method="POST",path="/pvz",le="0.1"} 1
+http_request_duration_seconds_sum{method="POST",path="/pvz"} 0.00266
+http_request_duration_seconds_count{method="POST",path="/pvz"} 1
+```
+
+### Бизнес-метрики
+
+#### `pvz_created_total`
+Сколько раз был вызван `POST /pvz`
+```
+pvz_created_total 1
+```
+
+#### `receptions_created_total`
+Сколько раз был вызван `POST /receptions`
+```
+receptions_created_total 1
+```
+
+#### `products_created_total`
+Сколько раз был вызван `POST /products`
+```
+products_created_total 1
+```
+
+### Прочее
+
+Все метрики `go_*`, `process_*`, `promhttp_*` — системные и относятся к мониторингу самого сервиса (потоки, память и т.д.).
+
+---
+
+## gRPC-сервис
+
+В рамках задания реализован отдельный gRPC-сервер, доступный на порту `3000`. Он не требует авторизации и предназначен для получения списка всех ПВЗ в системе.
+
+- Протокол: gRPC
+- Порт: `3000`
+- Сервис: `pvz.v1.PVZService`
+- Метод: `GetPVZList`
+
+### Вызов через grpcurl
+
+```bash
+grpcurl -plaintext localhost:3000 pvz.v1.PVZService.GetPVZList
+```
+
+### Ответ (пример)
+
+```json
+{
+  "pvz": [
+    {
+      "id": "b7c47d9c-5e91-4c3b-b9d0-6aa470d0f39c",
+      "city": "Москва",
+      "registrationDate": "2025-04-17T07:23:10Z"
+    }
+  ]
+}
+```
+
+gRPC реализован с использованием `protoc`, файл схемы находится в `proto/pvz.proto`.
 

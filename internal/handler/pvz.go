@@ -3,7 +3,9 @@ package handler
 import (
 	"net/http"
 
+	"avito-pvz-service/internal/metrics"
 	"avito-pvz-service/internal/repository"
+
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 )
@@ -43,6 +45,9 @@ func CreatePVZHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
+
+	// Бизнес‑метрика: новый ПВЗ
+    metrics.PVZCreatedTotal.Inc()
 
 	c.JSON(http.StatusCreated, pvz)
 }

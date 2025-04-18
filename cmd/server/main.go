@@ -8,19 +8,19 @@ import (
     "avito-pvz-service/internal/database"
     grpcSrv "avito-pvz-service/internal/grpc"
     "avito-pvz-service/internal/handler"
+    "avito-pvz-service/internal/metrics"
     "avito-pvz-service/internal/middleware"
 
     "github.com/gin-gonic/gin"
 )
 
 func main() {
-    // 1) Инициализируем БД
     if err := database.Init(); err != nil {
         log.Fatalf("Failed to initialize database: %v", err)
     }
     log.Println("Database connection established.")
 
-    // 2) Запускаем gRPC‑сервер в горутине
+    // Запуск gRPC-сервера
     var wg sync.WaitGroup
     wg.Add(1)
     go func() {
@@ -28,8 +28,17 @@ func main() {
         grpcSrv.RunGRPCServer()
     }()
 
-    // 3) Настраиваем HTTP‑сервер (Gin)
-    router := gin.Default()
+    // Запуск Prometheus‑метрик
+    wg.Add(1)
+    go func() {
+        defer wg.Done()
+        log.Println("Metrics server is running on :9000")
+        metrics.RunMetricsServer()
+    }()
+
+    // Запуск HTTP-сервера Gin
+    router := gin.New()
+    router.Use(gin.Recovery(), metrics.GinMiddleware())
 
     router.POST("/dummyLogin", handler.DummyLoginHandler)
     router.POST("/register", handler.RegisterHandler)
