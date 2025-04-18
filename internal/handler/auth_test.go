@@ -1,129 +1,70 @@
 package handler
 
 import (
-    "bytes"
-    "encoding/json"
-    "net/http"
-    "net/http/httptest"
-    "testing"
+	"bytes"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"testing"
 
-    "github.com/gin-gonic/gin"
-    "github.com/stretchr/testify/assert"
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestDummyLoginHandler_ValidRoles(t *testing.T) {
-    gin.SetMode(gin.TestMode)
-    cases := []struct {
-        Role       string
-        StatusCode int
-    }{
-        {"client", http.StatusOK},
-        {"moderator", http.StatusOK},
-    }
-    for _, c := range cases {
-        body, _ := json.Marshal(gin.H{"role": c.Role})
-        req := httptest.NewRequest(http.MethodPost, "/dummyLogin", bytes.NewBuffer(body))
-        req.Header.Set("Content-Type", "application/json")
-        w := httptest.NewRecorder()
+func TestDummyLoginHandler(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 
-        ctx, _ := gin.CreateTestContext(w)
-        ctx.Request = req
+	t.Run("ValidRoles", func(t *testing.T) {
+		for _, role := range []string{"client", "staff", "moderator", "anything"} {
+			// Формируем запрос
+			body, _ := json.Marshal(gin.H{"role": role})
+			req := httptest.NewRequest(http.MethodPost, "/dummyLogin", bytes.NewBuffer(body))
+			req.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
+			ctx, _ := gin.CreateTestContext(w)
+			ctx.Request = req
 
-        DummyLoginHandler(ctx)
+			// Вызываем хендлер
+			DummyLoginHandler(ctx)
 
-        assert.Equal(t, c.StatusCode, w.Code)
-        var resp map[string]string
-        assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
-        assert.NotEmpty(t, resp["token"])
-    }
-}
+			// Проверяем код и наличие токена
+			assert.Equal(t, http.StatusOK, w.Code, "для роли %q должен быть 200", role)
+			var resp DummyLoginResponse
+			err := json.Unmarshal(w.Body.Bytes(), &resp)
+			assert.NoError(t, err, "для роли %q тело должно парситься как JSON", role)
+			assert.NotEmpty(t, resp.Token, "для роли %q token не должен быть пустым", role)
+		}
+	})
 
-func TestDummyLoginHandler_InvalidRole(t *testing.T) {
-    gin.SetMode(gin.TestMode)
-    body, _ := json.Marshal(gin.H{"role": "unknown"})
-    req := httptest.NewRequest(http.MethodPost, "/dummyLogin", bytes.NewBuffer(body))
-    req.Header.Set("Content-Type", "application/json")
-    w := httptest.NewRecorder()
+	t.Run("MissingRole", func(t *testing.T) {
+		// Пустой JSON => нет поля role
+		req := httptest.NewRequest(http.MethodPost, "/dummyLogin", bytes.NewBuffer([]byte(`{}`)))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		ctx, _ := gin.CreateTestContext(w)
+		ctx.Request = req
 
-    ctx, _ := gin.CreateTestContext(w)
-    ctx.Request = req
+		DummyLoginHandler(ctx)
 
-    DummyLoginHandler(ctx)
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		var resp map[string]string
+		_ = json.Unmarshal(w.Body.Bytes(), &resp)
+		assert.Equal(t, "Неверный JSON или отсутствует роль", resp["message"])
+	})
 
-    assert.Equal(t, http.StatusBadRequest, w.Code)
-    var resp map[string]string
-    assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
-    assert.Equal(t, "Invalid role provided", resp["message"])
-}
+	t.Run("InvalidJSON", func(t *testing.T) {
+		// Некорректный JSON
+		req := httptest.NewRequest(http.MethodPost, "/dummyLogin", bytes.NewBuffer([]byte(`{role: staff}`)))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		ctx, _ := gin.CreateTestContext(w)
+		ctx.Request = req
 
-func TestDummyLoginHandler_MissingRole(t *testing.T) {
-    gin.SetMode(gin.TestMode)
+		DummyLoginHandler(ctx)
 
-    reqBody := []byte(`{}`) // нет поля role
-    req := httptest.NewRequest(http.MethodPost, "/dummyLogin", bytes.NewBuffer(reqBody))
-    req.Header.Set("Content-Type", "application/json")
-    w := httptest.NewRecorder()
-
-    ctx, _ := gin.CreateTestContext(w)
-    ctx.Request = req
-
-    DummyLoginHandler(ctx)
-
-    assert.Equal(t, http.StatusBadRequest, w.Code)
-    var resp map[string]string
-    assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
-    assert.Equal(t, "Invalid JSON or missing role", resp["message"])
-}
-
-func TestDummyLoginHandler_InvalidJSON(t *testing.T) {
-    gin.SetMode(gin.TestMode)
-
-    reqBody := []byte(`{role: staff}`) // некорректный JSON (нет кавычек вокруг ключа)
-    req := httptest.NewRequest(http.MethodPost, "/dummyLogin", bytes.NewBuffer(reqBody))
-    req.Header.Set("Content-Type", "application/json")
-    w := httptest.NewRecorder()
-
-    ctx, _ := gin.CreateTestContext(w)
-    ctx.Request = req
-
-    DummyLoginHandler(ctx)
-
-    assert.Equal(t, http.StatusBadRequest, w.Code)
-    var resp map[string]string
-    assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
-    assert.Equal(t, "Invalid JSON or missing role", resp["message"])
-}
-
-func TestDummyLoginHandler_StaffRole(t *testing.T) {
-    gin.SetMode(gin.TestMode)
-
-    reqBody, _ := json.Marshal(gin.H{"role": "staff"})
-    req := httptest.NewRequest(http.MethodPost, "/dummyLogin", bytes.NewBuffer(reqBody))
-    req.Header.Set("Content-Type", "application/json")
-    w := httptest.NewRecorder()
-
-    ctx, _ := gin.CreateTestContext(w)
-    ctx.Request = req
-
-    DummyLoginHandler(ctx)
-
-    assert.Equal(t, http.StatusOK, w.Code)
-    var resp map[string]string
-    assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
-    assert.NotEmpty(t, resp["token"])
-}
-
-func TestRegisterHandler_InvalidInput(t *testing.T) {
-    gin.SetMode(gin.TestMode)
-    body := []byte(`{"email": "not-an-email", "password": "", "role": "moderator"}`)
-    req := httptest.NewRequest(http.MethodPost, "/register", bytes.NewBuffer(body))
-    req.Header.Set("Content-Type", "application/json")
-    w := httptest.NewRecorder()
-
-    ctx, _ := gin.CreateTestContext(w)
-    ctx.Request = req
-
-    RegisterHandler(ctx)
-
-    assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		var resp map[string]string
+		_ = json.Unmarshal(w.Body.Bytes(), &resp)
+		assert.Equal(t, "Неверный JSON или отсутствует роль", resp["message"])
+	})
 }

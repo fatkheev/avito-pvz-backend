@@ -49,10 +49,23 @@ func getToken(t *testing.T, role string) string {
 	assert.NoError(t, err)
 	assert.Equal(t, 200, resp.StatusCode)
 
-	var result map[string]string
+	var result map[string]interface{}
 	_ = json.NewDecoder(resp.Body).Decode(&result)
-	return result["token"]
+
+	var token string
+	if val, ok := result["token"].(string); ok {
+		token = val
+	} else if val, ok := result["Token"].(string); ok {
+		token = val
+	}
+
+	if token == "" {
+		t.Fatalf("Token not received for role %s. Response: %#v", role, result)
+	}
+	return token
 }
+
+
 
 func postJSON(t *testing.T, path string, payload map[string]string, token string) map[string]interface{} {
 	body, _ := json.Marshal(payload)
@@ -64,12 +77,20 @@ func postJSON(t *testing.T, path string, payload map[string]string, token string
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	assert.NoError(t, err)
+
+	if resp.StatusCode >= 400 {
+		var errResp map[string]interface{}
+		_ = json.NewDecoder(resp.Body).Decode(&errResp)
+		t.Fatalf("Request to %s failed with status %d: %v", path, resp.StatusCode, errResp)
+	}
+
 	assert.Equal(t, 201, resp.StatusCode)
 
 	var result map[string]interface{}
 	_ = json.NewDecoder(resp.Body).Decode(&result)
 	return result
 }
+
 
 func post(t *testing.T, path string, token string) *http.Response {
 	req, _ := http.NewRequest("POST", baseURL+path, nil)

@@ -10,7 +10,7 @@ export const options = {
     },
 };
 
-// Выполняется один раз перед началом теста всеми VU
+// получаем токен один раз перед началом теста всеми VU
 export function setup() {
     const loginPayload = JSON.stringify({ role: 'staff' });
 

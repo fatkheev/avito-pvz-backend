@@ -106,17 +106,17 @@ func TestDeleteLastProduct_Success(t *testing.T) {
 	receptionID := "reception-1"
 	productID := "product-1"
 
-	// 1. Получить последнюю приёмку
+	// Получить последнюю приёмку
 	mock.ExpectQuery(`SELECT id, status FROM receptions`).
 		WithArgs(pvzID).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "status"}).AddRow(receptionID, "in_progress"))
 
-	// 2. Найти последний товар
+	// Найти последний товар
 	mock.ExpectQuery(`SELECT id FROM products`).
 		WithArgs(receptionID).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(productID))
 
-	// 3. Удалить товар
+	// Удалить товар
 	mock.ExpectExec(`DELETE FROM products`).
 		WithArgs(productID).
 		WillReturnResult(sqlmock.NewResult(1, 1))

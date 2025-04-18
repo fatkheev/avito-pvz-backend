@@ -16,7 +16,7 @@ func TestCreatePVZ_AllowedCity(t *testing.T) {
 	require.NoError(t, err)
 	defer db.Close()
 
-	// временно подменим базу в package database
+	// временно подменим базу
 	original := database.DB
 	database.DB = db
 	defer func() { database.DB = original }()
@@ -67,18 +67,18 @@ func TestGetPVZRecords_Success(t *testing.T) {
 	start := time.Date(2025, 4, 10, 0, 0, 0, 0, time.UTC)
 	end := time.Date(2025, 4, 17, 23, 59, 59, 0, time.UTC)
 
-	// 1. ПВЗ
+	// ПВЗ
 	mock.ExpectQuery(`SELECT DISTINCT p\.id, p\.registration_date, p\.city FROM pvz p JOIN receptions r ON p\.id = r\.pvz_id`).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "registration_date", "city"}).
 			AddRow("pvz-1", time.Now(), "Москва"))
 
-	// 2. Приёмки
+	// Приёмки
 	mock.ExpectQuery(`SELECT id, date_time, pvz_id, status FROM receptions`).
 		WithArgs("pvz-1", start, end).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "date_time", "pvz_id", "status"}).
 			AddRow("reception-1", time.Now(), "pvz-1", "in_progress"))
 
-	// 3. Товары
+	// Товары
 	mock.ExpectQuery(`SELECT id, date_time, type, reception_id, pvz_id FROM products WHERE reception_id = .* ORDER BY date_time ASC`).
 		WithArgs("reception-1").
 		WillReturnRows(sqlmock.NewRows([]string{"id", "date_time", "type", "reception_id", "pvz_id"}).

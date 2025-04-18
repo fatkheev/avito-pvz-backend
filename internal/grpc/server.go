@@ -42,7 +42,7 @@ func RunGRPCServer() {
 
     pvz_v1.RegisterPVZServiceServer(s, &server{})
 
-    // Включаем reflection, чтобы grpcurl и другие инструменты
+    // reflection, чтобы grpcurl и другие инструменты
     // могли автоматически узнать о сервисах и методах
     reflection.Register(s)
 

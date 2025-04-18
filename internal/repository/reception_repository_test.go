@@ -22,12 +22,12 @@ func TestCreateReception_Success(t *testing.T) {
 
 	pvzId := "pvz-123"
 
-	// 1. Нет открытой приёмки
+	// Нет открытой приёмки
 	mock.ExpectQuery("SELECT status FROM receptions").
 		WithArgs(pvzId).
 		WillReturnRows(sqlmock.NewRows([]string{})) // пусто
 
-	// 2. Успешный INSERT
+	// Успешный INSERT
 	mock.ExpectExec("INSERT INTO receptions").
 		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), pvzId, "in_progress").
 		WillReturnResult(sqlmock.NewResult(1, 1))
@@ -111,13 +111,13 @@ func TestCloseReception_Success(t *testing.T) {
 	receptionID := "rec-1"
 	now := time.Now()
 
-	// 1. Найти последнюю приёмку
+	// Найти последнюю приёмку
 	mock.ExpectQuery(`SELECT id, date_time, pvz_id, status FROM receptions`).
 		WithArgs(pvzID).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "date_time", "pvz_id", "status"}).
 			AddRow(receptionID, now, pvzID, "in_progress"))
 
-	// 2. Обновить статус
+	// Обновить статус
 	mock.ExpectExec(`UPDATE receptions SET status = 'close' WHERE id =`).
 		WithArgs(receptionID).
 		WillReturnResult(sqlmock.NewResult(1, 1))

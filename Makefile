@@ -14,7 +14,7 @@ gen:
 	cd internal/api && go generate
 
 test:
-	go test -v ./... -coverprofile=coverage.out
+	go test -v ./internal/... -coverprofile=coverage.out
 	go tool cover -func=coverage.out
 
 integration-test:

@@ -1,4 +1,3 @@
-// internal/metrics/metrics.go
 package metrics
 
 import (
@@ -75,7 +74,6 @@ func GinMiddleware() gin.HandlerFunc {
     }
 }
 
-// стартуеим HTTP‑сервер для Prometheus на порту 9000
 func RunMetricsServer() {
     http.Handle("/metrics", promhttp.Handler())
     logErr := http.ListenAndServe(":9000", nil)
