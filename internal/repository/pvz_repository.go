@@ -136,3 +136,21 @@ func GetPVZRecords(startDate, endDate *time.Time, page, limit int) ([]PVZRecord,
 
 	return records, nil
 }
+
+func GetAllPVZ() ([]PVZ, error) {
+    rows, err := database.DB.Query("SELECT id, registration_date, city FROM pvz")
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    var result []PVZ
+    for rows.Next() {
+        var p PVZ
+        if err := rows.Scan(&p.ID, &p.RegistrationDate, &p.City); err != nil {
+            return nil, err
+        }
+        result = append(result, p)
+    }
+    return result, nil
+}

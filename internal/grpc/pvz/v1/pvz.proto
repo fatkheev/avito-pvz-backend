@@ -1,0 +1,28 @@
+// internal/grpc/pvz/v1/pvz.proto
+syntax = "proto3";
+
+package pvz.v1;
+
+// Сгенерированный Go‑пакет
+option go_package = "avito-pvz-service/internal/grpc/pvz/v1;pvz_v1";
+
+import "google/protobuf/timestamp.proto";
+
+service PVZService {
+  // Возвращает все ПВЗ без авторизации
+  rpc GetPVZList(GetPVZListRequest) returns (GetPVZListResponse);
+}
+
+message PVZ {
+  string id = 1;
+  google.protobuf.Timestamp registration_date = 2;
+  string city = 3;
+}
+
+message GetPVZListRequest {
+  // пусто
+}
+
+message GetPVZListResponse {
+  repeated PVZ pvzs = 1;
+}

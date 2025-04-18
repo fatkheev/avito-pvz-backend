@@ -1,43 +1,54 @@
+// cmd/server/main.go
 package main
 
 import (
-	"log"
+    "log"
+    "sync"
 
-	"avito-pvz-service/internal/database"
-	"avito-pvz-service/internal/handler"
-	"avito-pvz-service/internal/middleware"
+    "avito-pvz-service/internal/database"
+    grpcSrv "avito-pvz-service/internal/grpc"
+    "avito-pvz-service/internal/handler"
+    "avito-pvz-service/internal/middleware"
 
-	"github.com/gin-gonic/gin"
+    "github.com/gin-gonic/gin"
 )
 
 func main() {
-	if err := database.Init(); err != nil {
-		log.Fatalf("Failed to initialize database: %v", err)
-	}
-	log.Println("Database connection established.")
+    // 1) Инициализируем БД
+    if err := database.Init(); err != nil {
+        log.Fatalf("Failed to initialize database: %v", err)
+    }
+    log.Println("Database connection established.")
 
-	router := gin.Default()
+    // 2) Запускаем gRPC‑сервер в горутине
+    var wg sync.WaitGroup
+    wg.Add(1)
+    go func() {
+        defer wg.Done()
+        grpcSrv.RunGRPCServer()
+    }()
 
-	router.POST("/dummyLogin", handler.DummyLoginHandler)
-	router.POST("/register", handler.RegisterHandler)
-	router.POST("/login", handler.LoginHandler)
+    // 3) Настраиваем HTTP‑сервер (Gin)
+    router := gin.Default()
 
-	// Защищённые эндпоинты
-	// Создание ПВЗ (только для модераторов)
-	router.POST("/pvz", middleware.JWTMiddleware(), handler.CreatePVZHandler)
-	// Создание приёмки товаров (только для сотрудников, роль "staff")
-	router.POST("/receptions", middleware.JWTMiddleware(), handler.CreateReceptionHandler)
-	// Защищённый эндпоинт для закрытия последней приёмки (только для сотрудников ПВЗ)
-	router.POST("/pvz/:pvzId/close_last_reception", middleware.JWTMiddleware(), handler.CloseReceptionHandler)
-	// Добавление товара (только для сотрудников, роль "staff")
-	router.POST("/products", middleware.JWTMiddleware(), handler.AddProductHandler)
-	// Удаление последнего товара (только для сотрудников, роль "staff")
-	router.POST("/pvz/:pvzId/delete_last_product", middleware.JWTMiddleware(), handler.DeleteLastProductHandler)
-	// Защищённый эндпоинт для получения данных по ПВЗ (доступен сотрудникам и модераторам)
-	router.GET("/pvz", middleware.JWTMiddleware(), handler.PVZListHandler)
+    router.POST("/dummyLogin", handler.DummyLoginHandler)
+    router.POST("/register", handler.RegisterHandler)
+    router.POST("/login", handler.LoginHandler)
 
-	log.Println("Server is running on port 8080")
-	if err := router.Run(":8080"); err != nil {
-		log.Fatalf("Error starting server: %v", err)
-	}
+    auth := router.Group("", middleware.JWTMiddleware())
+    {
+        auth.POST("/pvz", handler.CreatePVZHandler)
+        auth.GET("/pvz", handler.PVZListHandler)
+        auth.POST("/pvz/:pvzId/close_last_reception", handler.CloseReceptionHandler)
+        auth.POST("/pvz/:pvzId/delete_last_product", handler.DeleteLastProductHandler)
+        auth.POST("/receptions", handler.CreateReceptionHandler)
+        auth.POST("/products", handler.AddProductHandler)
+    }
+
+    log.Println("HTTP server is running on port 8080")
+    if err := router.Run(":8080"); err != nil {
+        log.Fatalf("Error starting HTTP server: %v", err)
+    }
+
+    wg.Wait()
 }
