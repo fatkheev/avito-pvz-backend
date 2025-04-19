@@ -18,7 +18,9 @@ export function setup() {
         headers: { 'Content-Type': 'application/json' },
     });
 
-    const token = loginRes.json('token');
+    console.log('Ответ от dummyLogin:', loginRes.body);
+
+    const token = loginRes.json('token') || loginRes.json('Token');
     if (!token) {
         throw new Error('Не удалось получить токен');
     }

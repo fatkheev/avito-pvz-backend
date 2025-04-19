@@ -92,6 +92,7 @@ products
 git clone https://github.com/fatkheev/avito-pvz-backend
 cd avito-pvz-backend
 cp .env.example .env
+go mod tidy
 make run
 ```
 
@@ -118,7 +119,6 @@ make integration-test
 
 ```bash
 make test          # запуск всех тестов
-make cover         # генерация coverage.html
 ```
 
 Стек:
@@ -164,7 +164,7 @@ brew install k6
 ### Запуск
 
 ```bash
-k6 run tests/stress/stress_test.js
+make stress-test
 ```
 
 ### k6 config (пример)
