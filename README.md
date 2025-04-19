@@ -1,6 +1,6 @@
 # Avito PVZ Backend Service
 
-Тестовое задание для стажёра Backend-направления (весенняя волна 2025)
+Тестовое задание Backend-направления Avito PVZ Service
 
 ## Содержание
 
