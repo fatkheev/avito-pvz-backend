@@ -49,8 +49,8 @@
 │   └── database                   # подключение к БД
 ├── migrations/                    # SQL-схема
 ├── tests/
-│   ├── integration/              # интеграционные тесты
-│   └── stress/                   # нагрузочные тесты (k6)
+│   ├── integration/               # интеграционные тесты
+│   └── stress/                    # нагрузочные тесты (k6)
 ├── .env                           # переменные среды
 ├── Dockerfile
 ├── docker-compose.yml
